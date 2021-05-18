@@ -1,36 +1,54 @@
 <template>
-    <template if:false={wiredRecord.data}>
-        <!-- lightning card for the label when wiredRecord has no data goes here -->
-        <lightning-card class="slds-align_absolute-center no-boat-height">
-            <span>{label.labelPleaseSelectABoat}</span>
-        </lightning-card>
-    </template>
-    <template if:true={wiredRecord.data}>
-        <lightning-tabset variant="scoped">
-            <lightning-tab lable={label.labelDetails} value="details">
-                <lightning-card icon-name={detailsTabIconName} title={boatName}>
-                    <lightning-button slot="actions" label={label.labelFullDetails} onclick={navigateToRecordViewPage}>
-                    </lightning-button>
-                    <lightning-record-view-form record-id={boatId} density="compact" object-api-name="Boat__c">
-                        <lightning-output-field field-name="BoatType__c" class="slds-form-element_1-col">
-                        </lightning-output-field>
-                        <lightning-output-field field-name="Length__c" class="slds-form-element_1-col">
-                        </lightning-output-field>
-                        <lightning-output-field field-name="Price__c" class="slds-form-element_1-col">
-                        </lightning-output-field>
-                        <lightning-output-field field-name="Description__c" class="slds-form-element_1-col">
-                        </lightning-output-field>
-                    </lightning-record-view-form>
-                </lightning-card>
-            </lightning-tab>
-            <lightning-tab lable={label.labelReviews} value="reviews">
-                <c-boat-reviews record-id={boatId}></c-boat-reviews>
-            </lightning-tab>
-            <lightning-tab lable={label.labelAddReview} value="addReview">
-                <c-boat-add-review-form boat-id={boatId} oncreatereview={handleReviewCreated}>
-                </c-boat-add-review-form>
-            </lightning-tab>
-        </lightning-tabset>
-    </template>
-</template>
-</template>
+    <!-- div for when there are no reviews available -->
+    <template if:false={reviewsToShow}>
+        <div class="slds-align_absolute-center">No reviews available</div>
+    </template>   
+    <template if:true={reviewsToShow}>     
+    <!-- div for when there are reviews available -->
+    <div class="slds-feed reviews-style slds-is-relative slds-scrollable_y">
+    <!-- insert spinner -->
+    <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>   
+    </template> 
+      <ul class="slds-feed__list">
+        <!-- start iteration -->
+        <template for:each={boatReviews} for:item="boatReview">
+          <li class="slds-feed__item" key={boatReview.Id}>
+            <article class="slds-post">
+              <header class="slds-post__header slds-media">
+                <div class="slds-media__figure">
+                  <!-- display the creator’s picture -->
+                  <lightning-avatar variant="circle" src={boatReview.CreatedBy.SmallPhotoUrl} 
+                                        alternative-text={boatReview.CreatedBy.Name} class="slds-m-right_small"></lightning-avatar>
+                </div>
+                <div class="slds-media__body">
+                  <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                    <p>
+                        <!-- display creator’s name -->
+                        <a value={boatReview.CreatedBy.Id} title={boatReview.CreatedBy.Name} data-record-id={boatReview.CreatedBy.Id} onclick={navigateToRecord}>
+                            {boatReview.CreatedBy.Name}
+                        </a>
+                      <span> - {boatReview.CreatedBy.CompanyName}</span>
+                    </p>
+                  </div>
+                  <p class="slds-text-body_small">
+                    <!-- display created  date -->
+                    <lightning-formatted-date-time value={boatReview.CreatedDate}>
+                    </lightning-formatted-date-time>   
+                  </p>
+                </div>
+              </header>
+              <div class="slds-text-longform">
+                <p class="slds-text-title_caps">{boatReview.Name}</p>
+                <lightning-formatted-rich-text value={boatReview.Comment__c}></lightning-formatted-rich-text>
+              </div>
+              <!-- display five star rating on readonly mode -->
+              <c-five-star-rating read-only="true" value={boatReview.Rating__c} ></c-five-star-rating>
+            </article>
+          </li>
+        </template>
+        <!-- end iteration -->
+      </ul>
+    </div>
+    </template>     
+  </template>
