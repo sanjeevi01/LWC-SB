@@ -13,68 +13,68 @@ import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
 import refresh from 'c/boatReviews';
 const BOAT_FIELDS = [BOAT_ID_FIELD, BOAT_NAME_FIELD];
 export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
-    @api boatId;
-   @api wiredRecord;
-    label = {
-      labelDetails,
-      labelReviews,
-      labelAddReview,
-      labelFullDetails,
-      labelPleaseSelectABoat,
-    };
-    
-    // Decide when to show or hide the icon
-    // returns 'utility:anchor' or null
-    get detailsTabIconName() {
-        return this.wiredRecord && this.wiredRecord.data ? 'utility:anchor' : null;
-     }
-    
-    // Utilize getFieldValue to extract the boat name from the record wire
-    @wire(getRecord, { recordId: '$boatId', fields: BOAT_FIELDS })
-    wiredRecord;
-    get boatName() {
-      return getFieldValue(this.wiredRecord.data, BOAT_NAME_FIELD);
-     }
-    
-    // Private
-    subscription = null;
-    // Initialize messageContext for Message Service
+  @api boatId;
+  @api wiredRecord;
+  label = {
+    labelDetails,
+    labelReviews,
+    labelAddReview,
+    labelFullDetails,
+    labelPleaseSelectABoat,
+  };
+
+  // Decide when to show or hide the icon
+  // returns 'utility:anchor' or null
+  get detailsTabIconName() {
+    return this.wiredRecord && this.wiredRecord.data ? 'utility:anchor' : null;
+  }
+
+  // Utilize getFieldValue to extract the boat name from the record wire
+  @wire(getRecord, { recordId: '$boatId', fields: BOAT_FIELDS })
+  wiredRecord;
+  get boatName() {
+    return getFieldValue(this.wiredRecord.data, BOAT_NAME_FIELD);
+  }
+
+  // Private
+  subscription = null;
+  // Initialize messageContext for Message Service
   @wire(MessageContext)
   messageContext;
-    
-    // Subscribe to the message channel
-    subscribeMC() {
-      if(this.subscription) { return; }
-      // local boatId must receive the recordId from the message
-      this.subscription = subscribe(
-          this.messageContext, 
-          BOATMC, 
-          (message) => {
-              this.boatId = message.recordId;
-          }, 
-          { scope: APPLICATION_SCOPE }
-      );
-    }
-    
-    // Calls subscribeMC()
-    connectedCallback() { 
-      this.subscribeMC();
-    }
-    
-    // Navigates to record page
-    navigateToRecordViewPage() {
-      this[NavigationMixin.Navigate]({
-        type: "standard__recordPage",
-        attributes: {
-            recordId: this.boatId,
-            actionName: "view"
-        }
-    });
-     }
-    
-    // Navigates back to the review list, and refreshes reviews component
-    handleReviewCreated() {
-      this.template.querySelector('lightning-tabset').activeTabValue = "reviews";
-      this.template.querySelector('c-boat-reviews').refresh();
-     }
+
+  // Subscribe to the message channel
+  subscribeMC() {
+    if (this.subscription) { return; }
+    // local boatId must receive the recordId from the message
+    this.subscription = subscribe(
+      this.messageContext,
+      BOATMC,
+      (message) => {
+        this.boatId = message.recordId;
+      },
+      { scope: APPLICATION_SCOPE }
+    );
   }
+
+  // Calls subscribeMC()
+  connectedCallback() {
+    this.subscribeMC();
+  }
+
+  // Navigates to record page
+  navigateToRecordViewPage() {
+    this[NavigationMixin.Navigate]({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: this.boatId,
+        actionName: "view"
+      }
+    });
+  }
+
+  // Navigates back to the review list, and refreshes reviews component
+  handleReviewCreated() {
+    this.template.querySelector('lightning-tabset').activeTabValue = "reviews";
+    this.template.querySelector('c-boat-reviews').refresh();
+  }
+}
